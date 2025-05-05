@@ -31,7 +31,7 @@ def pipeline(config):
         ds = prep_data(config)
         run_model.train(config['model_path'], ds, config["name"])
 
-        lm_eval.evaluate_model(config['model_path'], "./"+config["name"], config['task'])
+        lm_eval.evaluate_model(config['model_path'], config["name"], config['task'])
 
     else:
         lm_eval.evaluate_model(config['model_path'], None, config['task'])
