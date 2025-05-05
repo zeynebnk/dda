@@ -2,11 +2,26 @@ import run_model
 import lm_eval
 
 from datasets import load_dataset
+from huggingface_hub import login
+
 
 def prep_data(config):
 
     if config['data_src'] == 'genQA':
         ds = load_dataset("tomg-group-umd/GenQA", split=config['data_type'] + f"[:{config['size']}]")
+        
+        def format_text(example):
+            # Get the user question and assistant answer from the text list
+            question = example['text'][0]['content']  # user's question
+            answer = example['text'][1]['content']    # assistant's answer
+            
+            # Format for instruction tuning
+            return {
+                'text': f"<s>[INST] {question} [/INST] {answer} </s>"
+            }
+        
+        # Apply the formatting
+        ds = ds.map(format_text, remove_columns=ds.column_names)
 
     elif config['data_src'] == 'self_gen':
         ds = load_dataset("json", data_files=config['data_path'])
@@ -26,14 +41,14 @@ def pipeline(config):
 
 
 baseline_mmlu_config = {
-    'model_path': 'facebook/opt-125m',
+    'model_path': 'meta-llama/Meta-Llama-3-8B',
     'task': 'tinyMMLU',
     'ft': False,
     'name': 'baseline_mmlu'
 } 
 
 comparison_mmlu_config = {
-    'model_path': 'facebook/opt-125m',
+    'model_path': 'meta-llama/Meta-Llama-3-8B',
     'task': 'tinyMMLU',
     'ft': True,
     'data_src': 'genQA',
@@ -42,7 +57,7 @@ comparison_mmlu_config = {
     'name': 'comparison_mmlu'
 } 
 
-pipeline(baseline_mmlu_config)
+pipeline(comparison_mmlu_config)
 
 
 
