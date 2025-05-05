@@ -12,7 +12,7 @@ def evaluate_model(model_path, peft_path=None, task=None):
         --tasks {task}"
     else:
         run_command = f"cd lm-evaluation-harness/lm_eval/ && python __main__.py --model hf \
-        --model_args pretrained={model_path} \
+        --model_args pretrained=./{model_path} \
         --tasks {task}"
 
     subprocess.run(run_command, shell=True)
