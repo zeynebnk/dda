@@ -10,18 +10,19 @@ def prep_data(config):
     if config['data_src'] == 'genQA':
         ds = load_dataset("tomg-group-umd/GenQA", split=config['data_type'] + f"[:{config['size']}]")
         
-        def format_text(example):
-            question = example['text'][0]['content'] 
-            answer = example['text'][1]['content']   
-            
-            return {
-                'text': f"<s>[INST] {question} [/INST] {answer} </s>"
-            }
-        
-        ds = ds.map(format_text, remove_columns=ds.column_names)
 
     elif config['data_src'] == 'self_gen':
-        ds = load_dataset("json", data_files=config['data_path'])
+        ds = load_dataset("csv", data_files=config['data_path'])
+
+    def format_text(example):
+        question = example['text'][0]['content'] 
+        answer = example['text'][1]['content']   
+            
+        return {
+            'text': f"<s>[INST] {question} [/INST] {answer} </s>"
+        }
+        
+    ds = ds.map(format_text, remove_columns=ds.column_names)
 
     return ds
 
@@ -55,10 +56,3 @@ comparison_mmlu_config = {
 } 
 
 pipeline(comparison_mmlu_config)
-
-
-
-
-
-
-
