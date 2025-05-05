@@ -11,16 +11,13 @@ def prep_data(config):
         ds = load_dataset("tomg-group-umd/GenQA", split=config['data_type'] + f"[:{config['size']}]")
         
         def format_text(example):
-            # Get the user question and assistant answer from the text list
-            question = example['text'][0]['content']  # user's question
-            answer = example['text'][1]['content']    # assistant's answer
+            question = example['text'][0]['content'] 
+            answer = example['text'][1]['content']   
             
-            # Format for instruction tuning
             return {
                 'text': f"<s>[INST] {question} [/INST] {answer} </s>"
             }
         
-        # Apply the formatting
         ds = ds.map(format_text, remove_columns=ds.column_names)
 
     elif config['data_src'] == 'self_gen':
