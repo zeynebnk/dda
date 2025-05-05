@@ -17,7 +17,7 @@ def load_model(model_path, lora_path=None):
     )
 
     model = AutoModelForCausalLM.from_pretrained(
-        args.model_path,
+        model_path,
         quantization_config=bnb_config,
         torch_dtype=torch.bfloat16,
         device_map="auto",
@@ -25,7 +25,7 @@ def load_model(model_path, lora_path=None):
     )
     
     
-    tokenizer = AutoTokenizer.from_pretrained(args.model_path)
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     
@@ -46,33 +46,22 @@ def train(model_path, dataset, name):
         lora_dropout=0.05,
         r=64,
         bias="none",
-        target_modules="all-linear",
         task_type="CAUSAL_LM"
     )
     
     model = get_peft_model(model, peft_config)
     
     train_args = TrainingArguments(
-        output_dir=args.output_dir,
-        num_train_epochs=args.epochs,
-        per_device_train_batch_size=args.batch_size,
-        gradient_accumulation_steps=4,
-        gradient_checkpointing=True,
+        output_dir=name,
+        num_train_epochs=3,
         optim="adamw_torch_fused",
-        fp16=True,
-        bf16=False,
-        max_grad_norm=0.3,
-        report_to="none",
-        group_by_length=True,
-        dataloader_drop_last=True,
-        dataloader_num_workers=2,
-        evaluation_strategy="no"
+        
+        
     )
     
     trainer = SFTTrainer(
         model=model,
-        train_dataset=data,
-        tokenizer=tokenizer,
+        train_dataset=dataset,
         args=train_args,
     )
     
