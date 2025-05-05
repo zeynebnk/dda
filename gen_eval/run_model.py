@@ -29,7 +29,18 @@ def load_model(model_path, lora_path=None):
 def train(model_path, dataset, name):
 
     model, tokenizer = load_model(model_path)
+    model = prepare_model_for_kbit_training(model)
+    
+    lora_config = LoraConfig(
+        r=16, 
+        lora_alpha=32,  
+        target_modules=["q_proj", "k_proj", "v_proj", "o_proj"], 
+        bias="none",
+        task_type="CAUSAL_LM"
+    )
 
+    model = get_peft_model(model, lora_config)
+    
     trainer = Trainer(
         model=model,
         args=TrainingArguments(
